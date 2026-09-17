@@ -1,0 +1,6 @@
+{
+  "name": "Victor App",
+  "description": "ফার্নিচার অর্ডার ম্যানেজমেন্ট অফলাইন অ্যান্ড্রয়েড অ্যাপ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
