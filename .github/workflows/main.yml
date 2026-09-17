@@ -14,12 +14,16 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Build Debug APK
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Debug APK with Global Gradle
         run: |
           ROOT_DIR=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
           cd "$ROOT_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          
+          # gradlew ফাইল না থাকলেও গ্লোবাল গ্রেডল দিয়ে বিল্ড হবে
+          gradle assembleDebug --no-daemon --stacktrace
 
       - name: Upload Finished APK
         uses: actions/upload-artifact@v4
