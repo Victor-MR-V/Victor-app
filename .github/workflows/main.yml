@@ -17,7 +17,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Inject Custom Profile and Build APK
+      - name: Inject Custom Profile and Build Ultra Fast Release APK
         run: |
           ROOT_DIR=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
           cd "$ROOT_DIR"
@@ -28,26 +28,27 @@ jobs:
             touch app/.env.example app/.env
           fi
           
-          # আপনার আপলোড করা নতুন ছবিটিকে স্বয়ংক্রিয়ভাবে অ্যাপের সঠিক ফোল্ডারে কপি করা
+          # আপনার আপলোড করা ছবিটিকে অ্যাপের ভেতরে কপি করা
           if [ -f "my_profile.jpg" ]; then
-            echo "Custom profile photo found! Injecting into app assets..."
             cp my_profile.jpg app/src/main/res/drawable/img_victor_profile.jpg
           elif [ -f "../my_profile.jpg" ]; then
-            echo "Custom profile photo found in root! Injecting into app assets..."
             cp ../my_profile.jpg app/src/main/res/drawable/img_victor_profile.jpg
-          else
-            echo "Custom profile photo missing, using default layout."
           fi
           
-          # বিল্ডের জন্য প্রয়োজনীয় debug.keystore ফাইলটি অটো-জেনারেট করা
-          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          # রিলিজ মোডের জন্য একটি টেম্পোরারি Keystore ফাইল জেনারেট করা
+          keytool -genkey -v -keystore my-upload-key.jks -storepass android -alias upload -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Release,O=Android,C=US"
           
-          # ফাইনাল অ্যান্ড্রয়েড বিল্ড কমান্ড রান করা
-          gradle assembleDebug --no-daemon --stacktrace
+          # রিলিজ সাইনিং এনভায়রনমেন্ট সেটআপ করা যাতে কোডের পাসওয়ার্ডের সাথে মিলে যায়
+          export KEYSTORE_PATH="$(pwd)/my-upload-key.jks"
+          export STORE_PASSWORD="android"
+          export KEY_PASSWORD="android"
+          
+          # অ্যাপের বাটন সুপার-ফাস্ট করার জন্য ফাইনাল RELEASE বিল্ড কমান্ড রান করা
+          gradle assembleRelease --no-daemon --stacktrace
 
-      - name: Upload Finished APK
+      - name: Upload Ultra Fast Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: "**/build/outputs/apk/debug/*.apk"
+          name: app-release
+          path: "**/build/outputs/apk/release/*.apk"
           if-no-files-found: error
