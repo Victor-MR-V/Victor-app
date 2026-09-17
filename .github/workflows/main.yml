@@ -14,19 +14,14 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Locate Project Root and Build APK
+      - name: Build Debug APK Directly
         run: |
           ROOT_DIR=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
-          echo "Project root located at: $ROOT_DIR"
           cd "$ROOT_DIR"
+          chmod +x gradlew
           
-          if [ -f "./gradlew" ]; then
-            chmod +x gradlew
-            ./gradlew assembleDebug --no-daemon
-          else
-            echo "gradlew wrapper missing, building with global gradle"
-            gradle assembleDebug --no-daemon
-          fi
+          # রিলিজ সাইনিং এরর এড়াতে সরাসরি ডেবাক এ্যাসেম্বল কমান্ড রান করা
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload Finished APK Artifact
         uses: actions/upload-artifact@v4
