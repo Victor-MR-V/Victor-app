@@ -8,20 +8,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Locate Project Root and Build APK
         run: |
-          # settings.gradle ফাইলটি যেখানে আছে সেই আসল রুট ফোল্ডারটি খুঁজে বের করা
           ROOT_DIR=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
-          echo "Project root successfully located at: $ROOT_DIR"
+          echo "Project root located at: $ROOT_DIR"
           cd "$ROOT_DIR"
           
-          # gradlew ফাইলের এক্সিকিউশন পারমিশন ফিক্স করা
           if [ -f "./gradlew" ]; then
             chmod +x gradlew
             ./gradlew assembleDebug --no-daemon
