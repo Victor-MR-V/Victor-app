@@ -13,16 +13,26 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Locate Project Root and Build APK
+        run: |
+          # settings.gradle ফাইলটি যেখানে আছে সেই আসল রুট ফোল্ডারটি খুঁজে বের করা
+          ROOT_DIR=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
+          echo "Project root successfully located at: $ROOT_DIR"
+          cd "$ROOT_DIR"
+          
+          # gradlew ফাইলের এক্সিকিউশন পারমিশন ফিক্স করা
+          if [ -f "./gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug --no-daemon
+          else
+            echo "gradlew wrapper missing, building with global gradle"
+            gradle assembleDebug --no-daemon
+          fi
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
-
-      - name: Upload APK Artifact
+      - name: Upload Finished APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: "**/build/outputs/apk/debug/*.apk"
+          if-no-files-found: error
