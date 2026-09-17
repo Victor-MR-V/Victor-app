@@ -17,20 +17,19 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Fix App Secrets and Build APK
+      - name: Generate Keystore and Build APK
         run: |
           ROOT_DIR=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
           cd "$ROOT_DIR"
           
-          # প্রজেক্টের মেইন রুটে ফাইল তৈরি
-          touch .env.example
-          touch .env
-          
-          # প্লাগইনের এরর এড়াতে app/ ফোল্ডারের ভেতরেও ফাইলগুলো তৈরি করা
+          # মিসিং এনভায়রনমেন্ট ফাইল তৈরি
+          touch .env.example .env
           if [ -d "app" ]; then
-            touch app/.env.example
-            touch app/.env
+            touch app/.env.example app/.env
           fi
+          
+          # বিল্ডের জন্য প্রয়োজনীয় debug.keystore ফাইলটি অটো-জেনারেট করা
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           
           # ফাইনাল অ্যান্ড্রয়েড বিল্ড কমান্ড রান করা
           gradle assembleDebug --no-daemon --stacktrace
