@@ -14,16 +14,14 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Build Debug APK Directly
+      - name: Build Debug APK
         run: |
           ROOT_DIR=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
           cd "$ROOT_DIR"
           chmod +x gradlew
-          
-          # রিলিজ সাইনিং এরর এড়াতে সরাসরি ডেবাক এ্যাসেম্বল কমান্ড রান করা
           ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Upload Finished APK Artifact
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
